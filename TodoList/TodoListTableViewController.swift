@@ -10,31 +10,31 @@ import UIKit
 
 class TodoListTableViewController: UITableViewController{
     
-    let itemArray :Array = ["play wow", "dead Pool"]
-
+    var itemArray :Array = ["play wow", "dead Pool"]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
     }
-
+    
     //MARK - tableView Datasource Methods
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         cell.textLabel?.text = itemArray[indexPath.row]
         
         return cell
     }
-
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemArray.count
     }
-
+    
     //MARK - TableView Delegate Methods
     //tells the delegate that the specified row is now selected.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-    
+        
         if tableView.cellForRow(at: indexPath)?.accessoryType != .checkmark{
             tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
         }else{
@@ -42,12 +42,24 @@ class TodoListTableViewController: UITableViewController{
         }
     }
     
+    //MARK - Add New Items
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
         var textField = UITextField()
         let alert = UIAlertController(title: "新增待辦事項", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "新增", style: .default) { (action) in
-            <#code#>
+            //what willl happen once the user clicks the Add Item button on our UIAlert
+            
+            if (textField.text) != ""{
+                do{
+                    self.itemArray.append(textField.text!)
+                    self.tableView.reloadData()
+                }catch{
+                    print("無法建立新事項: \(error)")
+                }
+            }else{
+                print("無法建立新事項")
+            }
         }
         
         alert.addTextField { (alertTextField) in
