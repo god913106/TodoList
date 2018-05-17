@@ -11,10 +11,14 @@ import UIKit
 class TodoListTableViewController: UITableViewController{
     
     var itemArray :Array = ["play wow", "dead Pool"]
+    let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if let items = defaults.array(forKey: "TodoListArray") as? [String]{
+            itemArray = items
+        }
     }
     
     //MARK - tableView Datasource Methods
@@ -53,6 +57,9 @@ class TodoListTableViewController: UITableViewController{
             if (textField.text) != ""{
                 do{
                     self.itemArray.append(textField.text!)
+                    
+                    self.defaults.set(self.itemArray, forKey: "TodoListArray")
+                    
                     self.tableView.reloadData()
                 }catch{
                     print("無法建立新事項: \(error)")
