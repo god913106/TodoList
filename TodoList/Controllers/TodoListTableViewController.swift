@@ -7,24 +7,23 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListTableViewController: UITableViewController{
     
     //var itemArray :Array = ["play wow", "dead Pool"]
     var itemArray = [Item]()
-    //    let defaults = UserDefaults.standard
-    //    let defaultsKey = "TodoListArray"
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+    
+    
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(dataFilePath!)
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         loadItem()
-        //        if let items = defaults.array(forKey: defaultsKey) as? [Item]{
-        //            itemArray = items
-        //        }
     }
     
     //MARK - tableView Datasource Methods
@@ -54,14 +53,20 @@ class TodoListTableViewController: UITableViewController{
     //tells the delegate that the specified row is now selected.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+//        context.delete(itemArray[indexPath.row]) //先context去抓住你要刪除的row
+//        itemArray.remove(at: indexPath.row)      //再從view上remove掉那row 這兩個方法順序不可以互換 會bug
+        
         let item = itemArray[indexPath.row]
         item.done = !item.done
-        saveItems()
+        
         //        if itemArray[indexPath.row].done == false  {
         //            itemArray[indexPath.row].done = true
         //        }else {
         //            itemArray[indexPath.row].done = false
         //        }
+        
+        saveItems()
         tableView.reloadData()
         
     }
@@ -76,9 +81,15 @@ class TodoListTableViewController: UITableViewController{
             
             if (textField.text) != ""{
                 
-                let newItem = Item()
-                newItem.title = textField.text!
+                let newItem = Item(context: self.context)
+                /*
+                 data: {
+                 done = nil; 所以done 要預設為false
+                 title = loveu;
+                 */
                 
+                newItem.title = textField.text!
+                newItem.done = false
                 
                 self.itemArray.append(newItem)
                 
@@ -102,26 +113,22 @@ class TodoListTableViewController: UITableViewController{
     }
     //編碼 把view新增在textfield的字串 轉成 plist格式
     func saveItems(){
-        let encoder = PropertyListEncoder()
         
         do{
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         }catch{
-            print("Error encoding item array, \(error)")
+            print("無法存進context, \(error)")
         }
     }
     //解碼 plist表格 解析出來 放在view上
     func loadItem(){
-        let decoder = PropertyListDecoder()
-        
-        if let data =  try? Data(contentsOf: dataFilePath!){
-            do{
-                itemArray = try decoder.decode([Item].self, from: data)
-            } catch{
-                print("Error decoding item array, \(error)")
-            }
-            
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        do{
+            itemArray = try context.fetch(request)
+        } catch{
+            print("無法叫出資料, \(error)")
         }
+        
     }
+    
 }
