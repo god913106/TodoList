@@ -12,20 +12,19 @@ class TodoListTableViewController: UITableViewController{
     
     //var itemArray :Array = ["play wow", "dead Pool"]
     var itemArray = [Item]()
-    let defaults = UserDefaults.standard
-    let defaultsKey = "TodoListArray"
+    //    let defaults = UserDefaults.standard
+    //    let defaultsKey = "TodoListArray"
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let newItem = Item()
-        newItem.title = "wow"
-        itemArray.append(newItem)
+        print(dataFilePath!)
         
-        
-        if let items = defaults.array(forKey: defaultsKey) as? [Item]{
-            itemArray = items
-        }
+        loadItem()
+        //        if let items = defaults.array(forKey: defaultsKey) as? [Item]{
+        //            itemArray = items
+        //        }
     }
     
     //MARK - tableView Datasource Methods
@@ -56,8 +55,8 @@ class TodoListTableViewController: UITableViewController{
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let item = itemArray[indexPath.row]
-        item.done != item.done
-        
+        item.done = !item.done
+        saveItems()
         //        if itemArray[indexPath.row].done == false  {
         //            itemArray[indexPath.row].done = true
         //        }else {
@@ -77,17 +76,18 @@ class TodoListTableViewController: UITableViewController{
             
             if (textField.text) != ""{
                 
-                    let newItem = Item()
-                    newItem.title = textField.text!
-                    
-                    
-                    self.itemArray.append(newItem)
-                    
-                    self.defaults.set(self.itemArray, forKey: self.defaultsKey)
-                    
-                    self.tableView.reloadData()
-               
-               
+                let newItem = Item()
+                newItem.title = textField.text!
+                
+                
+                self.itemArray.append(newItem)
+                
+                self.saveItems()
+                
+                
+                self.tableView.reloadData()
+                
+                
             }else{
                 print("無法建立新事項")
             }
@@ -100,7 +100,28 @@ class TodoListTableViewController: UITableViewController{
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
-    
-    
+    //編碼 把view新增在textfield的字串 轉成 plist格式
+    func saveItems(){
+        let encoder = PropertyListEncoder()
+        
+        do{
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }catch{
+            print("Error encoding item array, \(error)")
+        }
+    }
+    //解碼 plist表格 解析出來 放在view上
+    func loadItem(){
+        let decoder = PropertyListDecoder()
+        
+        if let data =  try? Data(contentsOf: dataFilePath!){
+            do{
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch{
+                print("Error decoding item array, \(error)")
+            }
+            
+        }
+    }
 }
-
