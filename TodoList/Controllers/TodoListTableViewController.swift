@@ -53,10 +53,7 @@ class TodoListTableViewController: UITableViewController{
     //tells the delegate that the specified row is now selected.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-//        context.delete(itemArray[indexPath.row]) //先context去抓住你要刪除的row
-//        itemArray.remove(at: indexPath.row)      //再從view上remove掉那row 這兩個方法順序不可以互換 會bug
-        
+
         let item = itemArray[indexPath.row]
         item.done = !item.done
         
@@ -69,6 +66,16 @@ class TodoListTableViewController: UITableViewController{
         saveItems()
         tableView.reloadData()
         
+    }
+    //刪除
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        //如果滑動後選擇要刪除的話 刪除itemArray 中的資料，再讓view去reloadData
+        if editingStyle == .delete {
+            context.delete(itemArray[indexPath.row]) //先context去抓住你要刪除的row
+            itemArray.remove(at: indexPath.row)      //再從view上remove掉那row 這兩個方法順序不可以互換 會bug
+        }
+        saveItems()
+        tableView.reloadData()
     }
     
     //MARK - Add New Items
