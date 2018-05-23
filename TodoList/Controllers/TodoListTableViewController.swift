@@ -13,6 +13,12 @@ class TodoListTableViewController: UITableViewController{
     
     //var itemArray :Array = ["play wow", "dead Pool"]
     var itemArray = [Item]()
+    //選擇完分類會進入那分類的待辦事項
+    var selectedCategory : Category?{
+        didSet{
+            loadItem()
+        }
+    }
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
@@ -20,7 +26,7 @@ class TodoListTableViewController: UITableViewController{
         
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
-        loadItem()
+        //loadItem()
     }
     
     //MARK - tableView Datasource Methods
@@ -94,7 +100,7 @@ class TodoListTableViewController: UITableViewController{
                 
                 newItem.title = textField.text!
                 newItem.done = false
-                
+                newItem.parentCategory = self.selectedCategory
                 self.itemArray.append(newItem)
                 
                 self.saveItems()
@@ -125,9 +131,17 @@ class TodoListTableViewController: UITableViewController{
         }
     }
     //解碼 plist表格 解析出來 放在view上
-    func loadItem(with request: NSFetchRequest<Item> = Item.fetchRequest()){
+    func loadItem(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil){
         //with request: NSFetchRequest<Item> = Item.fetchRequest()
         //let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        if let addtionalPredicate = predicate{
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, addtionalPredicate])
+        }else {
+            request.predicate = categoryPredicate
+        }
+        
         do{
             itemArray = try context.fetch(request)
         } catch{

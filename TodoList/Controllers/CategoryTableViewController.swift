@@ -36,9 +36,20 @@ class CategoryTableViewController: UITableViewController {
     
     // MARK: - TableView Delegate Methods
     
+    //
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true) //點一下 灰一下 回白 使用者體驗
+        performSegue(withIdentifier: "showItems", sender: self)
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destinationVC = segue.destination as! TodoListTableViewController
+        
+        if let indexPath = tableView.indexPathForSelectedRow{
+            destinationVC.selectedCategory = categoryArray[indexPath.row]
+        }
+    }
+    //刪除data
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             context.delete(categoryArray[indexPath.row])
@@ -92,10 +103,5 @@ class CategoryTableViewController: UITableViewController {
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
-    
-    //MARK: - segue
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-    }
+   
 }
