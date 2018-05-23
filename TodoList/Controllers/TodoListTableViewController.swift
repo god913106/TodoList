@@ -13,9 +13,6 @@ class TodoListTableViewController: UITableViewController{
     
     //var itemArray :Array = ["play wow", "dead Pool"]
     var itemArray = [Item]()
-    
-    
-    
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
@@ -53,7 +50,7 @@ class TodoListTableViewController: UITableViewController{
     //tells the delegate that the specified row is now selected.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
+        
         let item = itemArray[indexPath.row]
         item.done = !item.done
         
@@ -128,14 +125,49 @@ class TodoListTableViewController: UITableViewController{
         }
     }
     //解碼 plist表格 解析出來 放在view上
-    func loadItem(){
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
+    func loadItem(with request: NSFetchRequest<Item> = Item.fetchRequest()){
+        //with request: NSFetchRequest<Item> = Item.fetchRequest()
+        //let request : NSFetchRequest<Item> = Item.fetchRequest()
         do{
             itemArray = try context.fetch(request)
         } catch{
             print("無法叫出資料, \(error)")
         }
-        
+        tableView.reloadData()
     }
     
+}
+
+//MARK: - Search bar methods
+
+extension TodoListTableViewController: UISearchBarDelegate{
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        if searchBar.text != "" {
+            request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+            request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+            loadItem(with: request)
+//            do{
+//                itemArray = try context.fetch(request)
+//            } catch{
+//                print("無法叫出資料, \(error)")
+//            }
+//            tableView.reloadData()
+        }else{
+            print("不要輸入空字串")
+        }
+        //有個bug就是searchBar查完後無法回到前一個畫面
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if  searchBar.text?.count == 0{
+            loadItem()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+        
+    }
 }
