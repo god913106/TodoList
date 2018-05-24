@@ -11,7 +11,6 @@ import CoreData
 
 class TodoListTableViewController: UITableViewController{
     
-    //var itemArray :Array = ["play wow", "dead Pool"]
     var itemArray = [Item]()
     //選擇完分類會進入那分類的待辦事項
     var selectedCategory : Category?{
@@ -24,7 +23,7 @@ class TodoListTableViewController: UITableViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)) //印出DataModel.sqlLite的位子
         
         //loadItem()
     }
@@ -121,6 +120,7 @@ class TodoListTableViewController: UITableViewController{
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
+    // MARK: - Data Manipulation Methods
     //編碼 把view新增在textfield的字串 轉成 plist格式
     func saveItems(){
         
